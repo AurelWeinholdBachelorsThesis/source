@@ -1,6 +1,7 @@
 OBJ := src/dropall.c
 
 OBJDUMP = llvm-objdump
+RM = rm -f
 
 CC = clang
 TARGET = -target bpf
@@ -14,3 +15,6 @@ ebpf.o: $(OBJ)
 
 dump: ebpf.o
 	$(OBJDUMP) -D $? > ebpf_dump.s
+
+clean:
+	$(RM) ebpf.o ebpf_dump.s

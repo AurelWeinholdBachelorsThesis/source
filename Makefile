@@ -1,4 +1,5 @@
 BPF_SRC := src/dropall.c
+LDR_SRC := src/loader.c
 
 OBJDUMP = llvm-objdump
 RM = rm -f
@@ -8,10 +9,13 @@ TARGET = -target bpf
 CFLAGS = -O2
 
 .PHONY: all
-all: ebpf.o dump
+all: ebpf.o loader dump
 
 ebpf.o: $(BPF_SRC)
 	$(CC) $(TARGET) $(CFLAGS) -c $? -o $@
+
+loader: $(LDR_SRC)
+	$(CC) $(CFLAGS) -c $^ -o $@
 
 .PHONY: dump
 dump: ebpf.o
@@ -19,4 +23,4 @@ dump: ebpf.o
 
 .PHONY: clean
 clean:
-	$(RM) ebpf.o ebpf_dump.s
+	$(RM) loader ebpf.o ebpf_dump.s

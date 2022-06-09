@@ -11,7 +11,7 @@ CFLAGS = -O2
 all: ebpf.o dump
 
 ebpf.o: $(BPF_SRC)
-	$(CC) $(TARGET) $(CFLAGS) -c $? -o $@ 
+	$(CC) $(TARGET) $(CFLAGS) -c $? -o $@
 
 .PHONY: dump
 dump: ebpf.o

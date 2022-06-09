@@ -1,4 +1,4 @@
-OBJ := src/dropall.c
+BPF_SRC := src/dropall.c
 
 OBJDUMP = llvm-objdump
 RM = rm -f
@@ -10,7 +10,7 @@ CFLAGS = -O2
 .PHONY: all
 all: ebpf.o dump
 
-ebpf.o: $(OBJ)
+ebpf.o: $(BPF_SRC)
 	$(CC) $(TARGET) $(CFLAGS) -c $? -o $@ 
 
 dump: ebpf.o

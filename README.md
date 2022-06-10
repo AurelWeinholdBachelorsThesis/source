@@ -1,5 +1,8 @@
 # Demo BPF applications
 
+## Dependencies
+- linux kernel >= 5.15
+
 ## Bootstrap
 
 `bootstrap` is an example of a simple (but realistic) BPF application. It

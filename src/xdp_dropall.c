@@ -38,6 +38,7 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		break;
 	case 'i':
 		errno = 0;
+		env.ifindex = -1;
 		env.ifindex = strtol(arg, NULL, 10);
 		if (errno || env.ifindex <= 0) {
 			fprintf(stderr, "Invalid ifindex: %s\n", arg);

@@ -107,6 +107,8 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
+	env.ifindex = 2;
+
 	/* Attach tracepoints */
 	// struct bpf_link bpf_program__attach_xdp(const struct bpf_program, int ifindex)
 	/*

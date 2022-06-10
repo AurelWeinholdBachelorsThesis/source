@@ -11,7 +11,7 @@
 
 static struct env {
 	bool verbose;
-	long min_duration_ms;
+	int ifindex;
 } env;
 
 const char *argp_program_version = "xdp_dropall 0.0";
@@ -22,11 +22,11 @@ const char argp_program_doc[] =
 "It traces process start and exits and shows associated \n"
 "information (filename, process duration, PID and PPID, etc).\n"
 "\n"
-"USAGE: ./xdp_dropall [-d <min-duration-ms>] [-v]\n";
+"USAGE: ./xdp_dropall ifindex [-v]\n";
 
 static const struct argp_option opts[] = {
 	{ "verbose", 'v', NULL, 0, "Verbose debug output" },
-	{ "duration", 'd', "DURATION-MS", 0, "Minimum process duration (ms) to report" },
+	{ "ifindex", 'i', "IFINDEX", -1, "Network interface index to attach to." },
 	{},
 };
 
@@ -36,11 +36,11 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	case 'v':
 		env.verbose = true;
 		break;
-	case 'd':
+	case 'i':
 		errno = 0;
-		env.min_duration_ms = strtol(arg, NULL, 10);
-		if (errno || env.min_duration_ms <= 0) {
-			fprintf(stderr, "Invalid duration: %s\n", arg);
+		env.ifindex = strtol(arg, NULL, 10);
+		if (errno || env.ifindex <= 0) {
+			fprintf(stderr, "Invalid ifindex: %s\n", arg);
 			argp_usage(state);
 		}
 		break;
@@ -107,13 +107,32 @@ int main(int argc, char **argv)
 	}
 
 	/* Attach tracepoints */
+	// struct bpf_link bpf_program__attach_xdp(const struct bpf_program, int ifindex)
+	/*
+	 * struct bpf_link {
+	 *		atomic64_t refcnt;
+	 * 		u32 id;
+	 * 		enum bpf_link_type type;
+	 * 		const struct bpf_link_ops *ops;
+	 * 		struct bpf_prog *prog;
+	 * 		struct work_struct work;
+	 * };
+	 */
+	struct bpf_link* link = bpf_program__attach_xdp(skel->progs.drop_all, env.ifindex);
+	//printf("ERRNO: %i\n", errno);
+	/*
 	err = xdp_dropall_bpf__attach(skel);
 	if (err) {
 		fprintf(stderr, "Failed to attach BPF skeleton\n");
 		goto cleanup;
 	}
+	*/
 
-	sleep(5);
+	for (int i = 0; i < 10; ++i) {
+		if (exiting)
+			break;
+		sleep(1);
+	}
 
 cleanup:
 	/* Clean up */

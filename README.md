@@ -3,6 +3,12 @@
 ## Dependencies
 - linux kernel >= 5.15
 
+
+## Drop all
+Usage: `sudo ./xdp_dropall ifindex`
+
+Find `ifindex` by using `ip link show`.
+
 ## Bootstrap
 
 `bootstrap` is an example of a simple (but realistic) BPF application. It

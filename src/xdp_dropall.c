@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	int err;
 	err = argp_parse(&argp, argc, argv, 0, NULL, &args);
 	if (err)
-		return err;
+		exit(err);
 
 	if (args.ifindex < 0)
 		exit(EXIT_FAILURE);
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 	skel = xdp_dropall_bpf__open();
 	if (!skel) {
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
-		return 1;
+		exit(EXIT_FAILURE);
 	}
 
 	/* Load & verify BPF programs */

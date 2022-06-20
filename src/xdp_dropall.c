@@ -17,7 +17,7 @@ static struct env {
 const char *argp_program_version = "xdp_dropall 0.0";
 const char *argp_program_bug_address = "<aurel@weinhold.org>";
 static char args_doc[] = "ifindex"; // arguments
-const char argp_program_doc[] =
+const char doc[] =
 "\nBPF xdp_dropall demo application.\n"
 "\n"
 "It drops all incoming packages on the eXpress Data Path\n"
@@ -52,7 +52,7 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 static const struct argp argp = {
 	.options = opts,
 	.parser = parse_arg,
-	.doc = argp_program_doc,
+	.doc = doc,
 	.args_doc = args_doc,
 };
 

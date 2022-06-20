@@ -9,6 +9,9 @@ const volatile __u32 port = 0;
 SEC("xdp")
 int drop_port(struct xdp_md *ctx)
 {
+	if (port == 0)
+		return XDP_PASS;
+
 	void *data = (void *)(long)ctx->data;
 	void *data_end = (void *)(long)ctx->data_end;
 
@@ -28,6 +31,7 @@ int drop_port(struct xdp_md *ctx)
 		if ((void*)tcp + sizeof(*tcp) > data_end)
 			return XDP_PASS;
 
+		// change from network to host byte order
 		if (bpf_ntohs(tcp->dest) != port)
 			return XDP_PASS;
 

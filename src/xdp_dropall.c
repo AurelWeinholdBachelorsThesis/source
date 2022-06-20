@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 	 * 		struct work_struct work;
 	 * };
 	 */
-	struct bpf_link* link = bpf_program__attach_xdp(skel->progs.drop_all, args.ifindex);
+	struct bpf_link* link = bpf_program__attach_xdp(skel->progs.drop_port, args.ifindex);
 	if (!link) {
 		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 		goto cleanup;

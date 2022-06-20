@@ -4,7 +4,7 @@
 char LICENSE[] SEC("license") = "GPL";
 
 SEC("xdp")
-int drop_all(struct xdp_md *ctx)
+int drop_port(struct xdp_md *ctx)
 {
 	return XDP_DROP;
 }

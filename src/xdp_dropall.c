@@ -146,11 +146,10 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	for (int i = 0; i < 10; ++i) {
+	while(1) {
 		if (exiting)
 			break;
-		sleep(1);
-	}
+	};
 
 cleanup:
 	/* Clean up */

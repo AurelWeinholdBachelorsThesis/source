@@ -10,10 +10,6 @@
 #include <bpf/libbpf.h>
 #include "xdp_dropall.skel.h"
 
-static struct env {
-	bool verbose;
-} env;
-
 const char *argp_program_version = "xdp_dropall 0.0";
 const char *argp_program_bug_address = "<aurel@weinhold.org>";
 static char args_doc[] = "ifindex"; // arguments
@@ -24,12 +20,13 @@ const char doc[] =
 "\n";
 
 static const struct argp_option opts[] = {
-	{ "verbose", 'v', NULL, OPTION_ARG_OPTIONAL, "Verbose debug output" },
+	{ "verbose", 'v', NULL, OPTION_ARG_OPTIONAL, "Verbose debug output. Currently not supported." },
 	{ NULL },
 };
 
 
 struct arguments {
+	bool verbose;
 	int ifindex;
 };
 
@@ -38,7 +35,7 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	struct arguments *args = (struct arguments*)state->input;
 	switch (key) {
 	case 'v':
-		env.verbose = true;
+		args->verbose = true;
 		break;
 	case ARGP_KEY_ARG:
 		args->ifindex = atoi(arg);
@@ -58,8 +55,11 @@ static const struct argp argp = {
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
-	if (level == LIBBPF_DEBUG && !env.verbose)
-		return 0;
+	/*
+	 * TODO(Aurel): Figure out how to handle verbose setting.
+	 * if (level == LIBBPF_DEBUG && !env.verbose)
+	 * 	return 0;
+	 */
 	return vfprintf(stderr, format, args);
 }
 
@@ -75,8 +75,10 @@ int main(int argc, char **argv)
 	struct ring_buffer *rb = NULL;
 	struct xdp_dropall_bpf *skel;
 
-	struct arguments args;
-	args.ifindex = -1;
+	// argument default values
+	struct arguments args = {
+		.verbose = false,
+	};
 
 	/* Parse command line options */
 	int err;

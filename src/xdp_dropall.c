@@ -12,7 +12,7 @@
 
 const char *argp_program_version = "xdp_dropall 0.0";
 const char *argp_program_bug_address = "<aurel@weinhold.org>";
-static char args_doc[] = "ifindex"; // arguments
+static char args_doc[] = "ifindex port"; // arguments
 const char doc[] =
 "\nBPF xdp_dropall demo application.\n"
 "\n"
@@ -28,6 +28,7 @@ static const struct argp_option opts[] = {
 struct arguments {
 	bool verbose;
 	int ifindex;
+	int port;
 };
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
@@ -38,7 +39,15 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		args->verbose = true;
 		break;
 	case ARGP_KEY_ARG:
-		args->ifindex = atoi(arg);
+		if(state->arg_num > 2)
+			argp_usage(state);
+
+		// first argument: ifindex
+		if (state->arg_num == 0)
+			args->ifindex = atoi(arg);
+		// second argument: port
+		if (state->arg_num == 1)
+			args->port = atoi(arg);
 		break;
 	default:
 		return ARGP_ERR_UNKNOWN;
@@ -78,6 +87,8 @@ int main(int argc, char **argv)
 	// argument default values
 	struct arguments args = {
 		.verbose = false,
+		.ifindex = -1,
+		.port = -1
 	};
 
 	/* Parse command line options */
@@ -86,8 +97,14 @@ int main(int argc, char **argv)
 	if (err)
 		exit(err);
 
-	if (args.ifindex < 0)
+	if (args.ifindex < 0) {
+		fprintf(stderr, "Invalid ifindex\n");
 		exit(EXIT_FAILURE);
+	}
+	if (args.port <= 0) {
+		fprintf(stderr, "Invalid port\n");
+		exit(EXIT_FAILURE);
+	}
 
 	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 	/* Set up libbpf errors and debug info callback */

@@ -1,5 +1,6 @@
 #include "vmlinux.h"
 #include <bpf/bpf_helpers.h>
+#include <bpf/bpf_endian.h>
 
 char LICENSE[] SEC("license") = "GPL";
 
@@ -25,7 +26,7 @@ int drop_port(struct xdp_md *ctx)
 		if ((void*)tcp + sizeof(*tcp) > data_end)
 			return XDP_PASS;
 
-		bpf_printk("TCP packet destination: %i", tcp->dest);
+		bpf_printk("TCP packet destination: %i", bpf_ntohs(tcp->dest));
 	}
 
 	return XDP_PASS;

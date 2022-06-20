@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 /* Copyright (c) 2020 Facebook */
 #include <argp.h>
+
 #include <signal.h>
 #include <stdio.h>
 #include <time.h>
@@ -15,14 +16,12 @@ static struct env {
 } env;
 
 const char *argp_program_version = "xdp_dropall 0.0";
-const char *argp_program_bug_address = "<bpf@vger.kernel.org>";
+const char *argp_program_bug_address = "<aurel@weinhold.org>";
 const char argp_program_doc[] =
-"BPF xdp_dropall demo application.\n"
+"\nBPF xdp_dropall demo application.\n"
 "\n"
-"It traces process start and exits and shows associated \n"
-"information (filename, process duration, PID and PPID, etc).\n"
-"\n"
-"USAGE: ./xdp_dropall ifindex [-v]\n";
+"It drops all incoming packages on the eXpress Data Path\n"
+"\n";
 
 static const struct argp_option opts[] = {
 	{ "verbose", 'v', NULL, 0, "Verbose debug output" },

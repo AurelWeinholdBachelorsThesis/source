@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	/* Attach tracepoints */
+	/* Attach to XDP stage */
 	// struct bpf_link bpf_program__attach_xdp(const struct bpf_program, int ifindex)
 	/*
 	 * struct bpf_link {
@@ -122,14 +122,10 @@ int main(int argc, char **argv)
 	 * };
 	 */
 	struct bpf_link* link = bpf_program__attach_xdp(skel->progs.drop_all, args.ifindex);
-	//printf("ERRNO: %i\n", errno);
-	/*
-	err = xdp_dropall_bpf__attach(skel);
-	if (err) {
-		fprintf(stderr, "Failed to attach BPF skeleton\n");
+	if (!link) {
+		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 		goto cleanup;
 	}
-	*/
 
 	for (int i = 0; i < 10; ++i) {
 		if (exiting)

@@ -4,6 +4,8 @@
 
 char LICENSE[] SEC("license") = "GPL";
 
+const volatile __u32 port = 0;
+
 SEC("xdp")
 int drop_port(struct xdp_md *ctx)
 {
@@ -24,6 +26,9 @@ int drop_port(struct xdp_md *ctx)
 	if (ipv4->protocol == IPPROTO_TCP) {
 		struct tcphdr *tcp = (void*)ipv4 + sizeof(*ipv4);
 		if ((void*)tcp + sizeof(*tcp) > data_end)
+			return XDP_PASS;
+
+		if (bpf_ntohs(tcp->dest) != port)
 			return XDP_PASS;
 
 		bpf_printk("TCP packet destination: %i", bpf_ntohs(tcp->dest));

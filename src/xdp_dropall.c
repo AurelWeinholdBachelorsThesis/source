@@ -120,6 +120,8 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	obj->rodata->port = env.port;
+
 	/* Load & verify BPF programs */
 	err = xdp_dropall_bpf__load(obj);
 	if (err) {

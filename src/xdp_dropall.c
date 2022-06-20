@@ -24,7 +24,7 @@ const char argp_program_doc[] =
 "\n";
 
 static const struct argp_option opts[] = {
-	{ "verbose", 'v', NULL, 0, "Verbose debug output" },
+	{ "verbose", 'v', NULL, OPTION_ARG_OPTIONAL, "Verbose debug output" },
 	{ NULL },
 };
 

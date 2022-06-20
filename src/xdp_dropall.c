@@ -12,11 +12,11 @@
 
 static struct env {
 	bool verbose;
-	int ifindex;
 } env;
 
 const char *argp_program_version = "xdp_dropall 0.0";
 const char *argp_program_bug_address = "<aurel@weinhold.org>";
+static char args_doc[] = "ifindex"; // arguments
 const char argp_program_doc[] =
 "\nBPF xdp_dropall demo application.\n"
 "\n"
@@ -25,27 +25,23 @@ const char argp_program_doc[] =
 
 static const struct argp_option opts[] = {
 	{ "verbose", 'v', NULL, 0, "Verbose debug output" },
-	{ "ifindex", 'i', "IFINDEX", -1, "Network interface index to attach to." },
-	{},
+	{ NULL },
+};
+
+
+struct arguments {
+	int ifindex;
 };
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
 {
+	struct arguments *args = (struct arguments*)state->input;
 	switch (key) {
 	case 'v':
 		env.verbose = true;
 		break;
-	case 'i':
-		errno = 0;
-		env.ifindex = -1;
-		env.ifindex = strtol(arg, NULL, 10);
-		if (errno || env.ifindex <= 0) {
-			fprintf(stderr, "Invalid ifindex: %s\n", arg);
-			argp_usage(state);
-		}
-		break;
 	case ARGP_KEY_ARG:
-		argp_usage(state);
+		args->ifindex = atoi(arg);
 		break;
 	default:
 		return ARGP_ERR_UNKNOWN;
@@ -57,6 +53,7 @@ static const struct argp argp = {
 	.options = opts,
 	.parser = parse_arg,
 	.doc = argp_program_doc,
+	.args_doc = args_doc,
 };
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
@@ -77,12 +74,18 @@ int main(int argc, char **argv)
 {
 	struct ring_buffer *rb = NULL;
 	struct xdp_dropall_bpf *skel;
-	int err;
 
-	/* Parse command line arguments */
-	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
+	struct arguments args;
+	args.ifindex = -1;
+
+	/* Parse command line options */
+	int err;
+	err = argp_parse(&argp, argc, argv, 0, NULL, &args);
 	if (err)
 		return err;
+
+	if (args.ifindex < 0)
+		exit(EXIT_FAILURE);
 
 	libbpf_set_strict_mode(LIBBPF_STRICT_ALL);
 	/* Set up libbpf errors and debug info callback */
@@ -106,8 +109,6 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	env.ifindex = 2;
-
 	/* Attach tracepoints */
 	// struct bpf_link bpf_program__attach_xdp(const struct bpf_program, int ifindex)
 	/*
@@ -120,7 +121,7 @@ int main(int argc, char **argv)
 	 * 		struct work_struct work;
 	 * };
 	 */
-	struct bpf_link* link = bpf_program__attach_xdp(skel->progs.drop_all, env.ifindex);
+	struct bpf_link* link = bpf_program__attach_xdp(skel->progs.drop_all, args.ifindex);
 	//printf("ERRNO: %i\n", errno);
 	/*
 	err = xdp_dropall_bpf__attach(skel);

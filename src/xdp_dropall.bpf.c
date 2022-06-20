@@ -19,7 +19,7 @@ int drop_port(struct xdp_md *ctx)
 	if ((void*)ipv4 + sizeof(*ipv4) > data_end)
 		return XDP_PASS;
 
-	//TODO(Aurel): Find out how to parse IPv6
+	// TODO(Aurel): Find out how to parse IPv6
 
 	if (ipv4->protocol == IPPROTO_TCP) {
 		struct tcphdr *tcp = (void*)ipv4 + sizeof(*ipv4);

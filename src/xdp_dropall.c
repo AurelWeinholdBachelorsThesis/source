@@ -33,10 +33,10 @@ struct arguments {
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
 {
-	struct arguments *args = (struct arguments*)state->input;
+	struct arguments *env = (struct arguments*)state->input;
 	switch (key) {
 	case 'v':
-		args->verbose = true;
+		env->verbose = true;
 		break;
 	case ARGP_KEY_ARG:
 		if(state->arg_num > 2)
@@ -44,10 +44,10 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 
 		// first argument: ifindex
 		if (state->arg_num == 0)
-			args->ifindex = atoi(arg);
+			env->ifindex = atoi(arg);
 		// second argument: port
 		if (state->arg_num == 1)
-			args->port = atoi(arg);
+			env->port = atoi(arg);
 		break;
 	default:
 		return ARGP_ERR_UNKNOWN;
@@ -81,11 +81,10 @@ static void sig_handler(int sig)
 
 int main(int argc, char **argv)
 {
-	struct ring_buffer *rb = NULL;
-	struct xdp_dropall_bpf *skel;
+	struct xdp_dropall_bpf *obj;
 
 	// argument default values
-	struct arguments args = {
+	struct arguments env = {
 		.verbose = false,
 		.ifindex = -1,
 		.port = -1
@@ -93,15 +92,15 @@ int main(int argc, char **argv)
 
 	/* Parse command line options */
 	int err;
-	err = argp_parse(&argp, argc, argv, 0, NULL, &args);
+	err = argp_parse(&argp, argc, argv, 0, NULL, &env);
 	if (err)
 		exit(err);
 
-	if (args.ifindex < 0) {
+	if (env.ifindex < 0) {
 		fprintf(stderr, "Invalid ifindex\n");
 		exit(EXIT_FAILURE);
 	}
-	if (args.port <= 0) {
+	if (env.port <= 0) {
 		fprintf(stderr, "Invalid port\n");
 		exit(EXIT_FAILURE);
 	}
@@ -115,14 +114,14 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sig_handler);
 
 	/* Load and verify BPF application */
-	skel = xdp_dropall_bpf__open();
-	if (!skel) {
+	obj = xdp_dropall_bpf__open();
+	if (!obj) {
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		exit(EXIT_FAILURE);
 	}
 
 	/* Load & verify BPF programs */
-	err = xdp_dropall_bpf__load(skel);
+	err = xdp_dropall_bpf__load(obj);
 	if (err) {
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
 		goto cleanup;
@@ -140,7 +139,7 @@ int main(int argc, char **argv)
 	 * 		struct work_struct work;
 	 * };
 	 */
-	struct bpf_link* link = bpf_program__attach_xdp(skel->progs.drop_port, args.ifindex);
+	struct bpf_link* link = bpf_program__attach_xdp(obj->progs.drop_port, env.ifindex);
 	if (!link) {
 		fprintf(stderr, "Failed to attach eBPF to XDP.\n");
 		goto cleanup;
@@ -153,7 +152,7 @@ int main(int argc, char **argv)
 
 cleanup:
 	/* Clean up */
-	xdp_dropall_bpf__destroy(skel);
+	xdp_dropall_bpf__destroy(obj);
 
 	return err < 0 ? -err : 0;
 }
